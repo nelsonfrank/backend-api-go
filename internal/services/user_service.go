@@ -3,7 +3,7 @@ package services
 import "github.com/nelsonfrank/backend-api-go/internal/domain"
 
 type UserService struct {
-	repo domain.UserRepository
+	Repo domain.UserRepository
 }
 
 func NewUserService(r domain.UserRepository) *UserService {
@@ -11,5 +11,5 @@ func NewUserService(r domain.UserRepository) *UserService {
 }
 
 func (s *UserService) RegisterUser(name, email string) (domain.User, error) {
-	return s.repo.Create(name, email)
+	return s.Repo.Create(name, email)
 }

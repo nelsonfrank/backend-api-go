@@ -11,35 +11,25 @@ import (
 
 // API holds all dependencies needed for routing
 type API struct {
-	UserService *services.UserService
+	services *services.Services
 }
 
-func NewAPI(userService *services.UserService) *API {
-	return &API{
-		UserService: userService,
-	}
+func NewAPI(services *services.Services) *API {
+	return &API{services: services}
 }
 
 // Router builds and returns the chi router with versioned routes
 func (api *API) Router() http.Handler {
 	r := chi.NewRouter()
 
-	// ===== V1 =====
-	userHandlerV1 := v1.NewUserHandler(api.UserService)
-
+	// v1 routes
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Route("/users", func(r chi.Router) {
-			r.Mount("/", userHandlerV1.Routes())
-		})
+		r.Mount("/users", v1.NewUserHandler(api.services.User).Routes())
 	})
 
-	// ===== V2 =====
-	userHandlerV2 := v2.NewUserHandler(api.UserService)
-
+	// v2 routes
 	r.Route("/api/v2", func(r chi.Router) {
-		r.Route("/users", func(r chi.Router) {
-			r.Mount("/", userHandlerV2.Routes())
-		})
+		r.Mount("/users", v2.NewUserHandler(api.services.User).Routes())
 	})
 
 	return r
