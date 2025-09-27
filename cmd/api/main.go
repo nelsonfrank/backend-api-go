@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
-	"net/http"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/nelsonfrank/backend-api-go/internal/config"
@@ -11,14 +9,21 @@ import (
 	"github.com/nelsonfrank/backend-api-go/internal/repository"
 	"github.com/nelsonfrank/backend-api-go/internal/services"
 	transport "github.com/nelsonfrank/backend-api-go/internal/transport/http"
+	"go.uber.org/zap"
 )
 
 func main() {
-	cfg := config.Load()
+	// Initialize application
+	app := application{
+		config: config.Load(),
+		logger: zap.Must(zap.NewProduction()).Sugar(),
+	}
+	defer app.logger.Sync()
 
-	conn, err := db.Connect(context.Background(), cfg.DBDSN)
+	// Initialize database connection
+	conn, err := db.Connect(context.Background(), app.config.DBDSN)
 	if err != nil {
-		log.Fatal(err)
+		app.logger.Fatal(err)
 	}
 	defer conn.Close()
 
@@ -28,10 +33,11 @@ func main() {
 	// Initialize services
 	services := services.NewServices(repos)
 
-	// API
+	// Initialize API
 	api := transport.NewAPI(services)
-	log.Println("Server running at :8090")
-	if err := http.ListenAndServe(":8090", api.Router()); err != nil {
-		log.Fatal(err)
+
+	// Run application
+	if err := app.run(api.Router()); err != nil {
+		app.logger.Fatal(err)
 	}
 }

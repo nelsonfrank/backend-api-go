@@ -7,11 +7,13 @@ import (
 type Config struct {
 	DBDSN      string
 	ServerPort string
+	Env        string
 }
 
 func Load() *Config {
 	return &Config{
 		DBDSN:      os.Getenv("DB_ADDR"),
-		ServerPort: os.Getenv("SERVER_PORT"),
+		ServerPort: os.Getenv("ADDR"),
+		Env:        os.Getenv("ENV"),
 	}
 }
