@@ -7,8 +7,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/nelsonfrank/backend-api-go/internal/db"
+	"github.com/nelsonfrank/backend-api-go/internal/dto"
 	"github.com/nelsonfrank/backend-api-go/internal/services"
 	"github.com/nelsonfrank/backend-api-go/internal/utils"
+	"github.com/nelsonfrank/backend-api-go/internal/validator"
 )
 
 type UserHandler struct {
@@ -28,12 +30,13 @@ func (h *UserHandler) Routes() chi.Router {
 }
 
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	var body struct {
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
+	var body dto.CreateUserDTO
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := validator.Validate.Struct(body); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
