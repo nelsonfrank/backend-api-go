@@ -76,6 +76,7 @@ curl http://localhost:8090/health
 ```json
 {
   "status": "ok",
+  "timestamp": "2025-09-27T12:00:00Z",
   "message": "API is running"
 }
 ```
@@ -85,7 +86,7 @@ curl http://localhost:8090/health
 **Request**
 
 ```bash
-curl -X POST http://localhost:8090/api/users \
+curl -X POST http://localhost:8090/api/v1/users \
   -H "Content-Type: application/json" \
   -d '{"name":"User","email":"user@example.com","password":"secret123"}'
 ```
