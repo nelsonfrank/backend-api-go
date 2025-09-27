@@ -23,10 +23,23 @@ func (r *userRepository) GetByID(id int64) (domain.User, error) {
 	return domain.User{ID: int64(u.ID), Name: u.Name, Email: u.Email}, nil
 }
 
-func (r *userRepository) Create(name, email string) (domain.User, error) {
-	u, err := r.q.CreateUser(context.Background(), db.CreateUserParams{Name: name, Email: email})
+func (r *userRepository) Create(name, email, password string) (domain.User, error) {
+	u, err := r.q.CreateUser(context.Background(), db.CreateUserParams{Name: name, Email: email, Password: password})
 	if err != nil {
 		return domain.User{}, err
 	}
 	return domain.User{ID: int64(u.ID), Name: u.Name, Email: u.Email}, nil
+}
+
+func (r *userRepository) ListAll(arg db.ListUsersParams) ([]domain.User, error) {
+	us, err := r.q.ListUsers(context.Background(), arg)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []domain.User
+	for _, u := range us {
+		users = append(users, domain.User{ID: int64(u.ID), Name: u.Name, Email: u.Email})
+	}
+	return users, nil
 }

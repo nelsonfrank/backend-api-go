@@ -11,7 +11,7 @@ type Config struct {
 
 func Load() *Config {
 	return &Config{
-		DBDSN:      os.Getenv("DB_DSN"),
+		DBDSN:      os.Getenv("DB_ADDR"),
 		ServerPort: os.Getenv("SERVER_PORT"),
 	}
 }

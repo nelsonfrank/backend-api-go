@@ -6,7 +6,9 @@ import (
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/nelsonfrank/backend-api-go/internal/db"
 	"github.com/nelsonfrank/backend-api-go/internal/services"
+	"github.com/nelsonfrank/backend-api-go/internal/utils"
 )
 
 type UserHandler struct {
@@ -21,20 +23,22 @@ func (h *UserHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 	r.Post("/", h.CreateUser)
 	r.Get("/{id}", h.GetUserByID)
+	r.Get("/", h.ListUsers)
 	return r
 }
 
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var body struct {
-		Name  string `json:"name"`
-		Email string `json:"email"`
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	u, err := h.service.RegisterUser(body.Name, body.Email)
+	u, err := h.service.RegisterUser(body.Name, body.Email, body.Password)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -50,9 +54,26 @@ func (h *UserHandler) GetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := h.service.Repo.GetByID(id) // or wrap service method
+	u, err := h.service.GetUserByID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	json.NewEncoder(w).Encode(u)
+}
+
+func (h *UserHandler) ListUsers(w http.ResponseWriter, r *http.Request) {
+	limit := utils.QueryInt(r, "limit", 10)
+	offset := utils.QueryInt(r, "offset", 0)
+
+	args := db.ListUsersParams{
+		Limit:  int32(limit),
+		Offset: int32(offset),
+	}
+
+	u, err := h.service.ListUsers(args)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	json.NewEncoder(w).Encode(u)
